@@ -19,7 +19,7 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
-    // 🔐 新增签名配置
+    // 🔐 签名配置
     signingConfigs {
         create("release") {
             storeFile = file("C:/Users/Administrator/upload-keystore.jks")
@@ -30,10 +30,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.strin.fufuDingingRoom"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

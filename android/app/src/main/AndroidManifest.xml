@@ -3,7 +3,7 @@
     <application
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config"
-        android:label="fufuDiningRoom"
+        android:label="福福餐厅"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -9,12 +9,19 @@ import '../services/orders_service.dart';
 
 /// 订单列表页面组件
 class OrderPage extends StatefulWidget {
-  const OrderPage({super.key, this.refreshTrigger});
+  const OrderPage({
+    super.key,
+    this.refreshTrigger,
+    this.globalRefreshTrigger,
+    this.onRequestGlobalRefresh,
+  });
 
   static const String routeName = '/orders';
 
   /// 刷新触发器，当值改变时会触发刷新
   final ValueNotifier<int>? refreshTrigger;
+  final ValueNotifier<int>? globalRefreshTrigger;
+  final VoidCallback? onRequestGlobalRefresh;
 
   @override
   State<OrderPage> createState() => _OrderPageState();
@@ -41,16 +48,22 @@ class _OrderPageState extends State<OrderPage> {
     
     // 监听刷新触发器
     widget.refreshTrigger?.addListener(_onRefreshTriggered);
+    widget.globalRefreshTrigger?.addListener(_onGlobalRefreshTriggered);
   }
 
   @override
   void dispose() {
     widget.refreshTrigger?.removeListener(_onRefreshTriggered);
+    widget.globalRefreshTrigger?.removeListener(_onGlobalRefreshTriggered);
     super.dispose();
   }
 
   /// 当刷新触发器改变时调用
   void _onRefreshTriggered() {
+    _loadOrders();
+  }
+
+  void _onGlobalRefreshTriggered() {
     _loadOrders();
   }
 
@@ -601,6 +614,7 @@ class _OrderPageState extends State<OrderPage> {
           ),
         );
         _loadOrders(); // 刷新订单列表
+        widget.onRequestGlobalRefresh?.call();
       }
     } catch (error) {
       if (context.mounted) {

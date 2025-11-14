@@ -9,9 +9,10 @@ import '../services/orders_service.dart';
 
 /// 报告页面组件
 class ReportPage extends StatefulWidget {
-  const ReportPage({super.key});
+  const ReportPage({super.key, this.globalRefreshTrigger});
 
   static const String routeName = '/report';
+  final ValueNotifier<int>? globalRefreshTrigger;
 
   @override
   State<ReportPage> createState() => _ReportPageState();
@@ -35,6 +36,13 @@ class _ReportPageState extends State<ReportPage> {
     super.initState();
     _service = OrdersService(Supabase.instance.client);
     _loadData();
+    widget.globalRefreshTrigger?.addListener(_handleExternalRefresh);
+  }
+
+  @override
+  void dispose() {
+    widget.globalRefreshTrigger?.removeListener(_handleExternalRefresh);
+    super.dispose();
   }
 
   /// 加载数据
@@ -60,6 +68,10 @@ class _ReportPageState extends State<ReportPage> {
         });
       }
     }
+  }
+
+  void _handleExternalRefresh() {
+    _loadData();
   }
 
   /// 按月份统计食材总和

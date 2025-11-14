@@ -9,10 +9,17 @@ import '../services/orders_service.dart';
 
 /// 菜单页面组件
 class MenuPage extends StatefulWidget {
-  const MenuPage({super.key, this.onOrderSubmitted});
+  const MenuPage({
+    super.key,
+    this.onOrderSubmitted,
+    this.globalRefreshTrigger,
+    this.onRequestGlobalRefresh,
+  });
 
   static const String routeName = '/menu';
   final VoidCallback? onOrderSubmitted;
+  final ValueNotifier<int>? globalRefreshTrigger;
+  final VoidCallback? onRequestGlobalRefresh;
 
   @override
   State<MenuPage> createState() => _MenuPageState();
@@ -31,6 +38,7 @@ class _MenuPageState extends State<MenuPage> {
     super.initState();
     _service = OrdersService(Supabase.instance.client);
     _loadMenu();
+    widget.globalRefreshTrigger?.addListener(_handleExternalRefresh);
   }
 
   /// 计算购物车总价
@@ -116,9 +124,9 @@ class _MenuPageState extends State<MenuPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('订单提交成功！')),
         );
-
         // 通知父组件刷新订单列表
         widget.onOrderSubmitted?.call();
+        widget.onRequestGlobalRefresh?.call();
       }
     } catch (error) {
       if (!context.mounted) return;
@@ -129,6 +137,10 @@ class _MenuPageState extends State<MenuPage> {
         ),
       );
     }
+  }
+
+  void _handleExternalRefresh() {
+    _loadMenu();
   }
 
   Future<void> _loadMenu() async {
@@ -153,6 +165,12 @@ class _MenuPageState extends State<MenuPage> {
         });
       }
     }
+  }
+
+  @override
+  void dispose() {
+    widget.globalRefreshTrigger?.removeListener(_handleExternalRefresh);
+    super.dispose();
   }
 
   @override

@@ -9,9 +9,15 @@ import '../services/orders_service.dart';
 
 /// 服务端订单管理页面组件
 class ServerOrderPage extends StatefulWidget {
-  const ServerOrderPage({super.key});
+  const ServerOrderPage({
+    super.key,
+    this.globalRefreshTrigger,
+    this.onRequestGlobalRefresh,
+  });
 
   static const String routeName = '/server-orders';
+  final ValueNotifier<int>? globalRefreshTrigger;
+  final VoidCallback? onRequestGlobalRefresh;
 
   @override
   State<ServerOrderPage> createState() => _ServerOrderPageState();
@@ -35,6 +41,13 @@ class _ServerOrderPageState extends State<ServerOrderPage> {
     super.initState();
     _service = OrdersService(Supabase.instance.client);
     _loadOrders();
+    widget.globalRefreshTrigger?.addListener(_onGlobalRefreshTriggered);
+  }
+
+  @override
+  void dispose() {
+    widget.globalRefreshTrigger?.removeListener(_onGlobalRefreshTriggered);
+    super.dispose();
   }
 
   /// 加载订单列表
@@ -124,6 +137,7 @@ class _ServerOrderPageState extends State<ServerOrderPage> {
         );
         // 刷新订单列表
         _loadOrders();
+        widget.onRequestGlobalRefresh?.call();
       }
     } catch (error) {
       if (context.mounted) {
@@ -174,6 +188,7 @@ class _ServerOrderPageState extends State<ServerOrderPage> {
           ),
         );
         _loadOrders();
+        widget.onRequestGlobalRefresh?.call();
       }
     } catch (error) {
       if (context.mounted) {
@@ -541,6 +556,7 @@ class _ServerOrderPageState extends State<ServerOrderPage> {
           ),
         );
         _loadOrders(); // 刷新订单列表
+        widget.onRequestGlobalRefresh?.call();
       }
     } catch (error) {
       if (context.mounted) {
@@ -552,6 +568,10 @@ class _ServerOrderPageState extends State<ServerOrderPage> {
         );
       }
     }
+  }
+
+  void _onGlobalRefreshTriggered() {
+    _loadOrders();
   }
 
   /// 获取订单状态对应的颜色

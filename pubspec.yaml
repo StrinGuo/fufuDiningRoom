@@ -46,6 +46,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -88,3 +89,20 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# 应用图标配置
+# 使用说明：
+# 1. 准备一个 1024x1024 的 PNG 图标，保存为 assets/icon/app_icon.png
+# 2. 运行: flutter pub get
+# 3. 运行: flutter pub run flutter_launcher_icons
+# 4. 图标会自动生成到 Android 和 iOS 项目中
+flutter_launcher_icons:
+  android: true
+  ios: true
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+  image_path: "assets/icon/app_icon.png"
+  # Android 自适应图标配置（可选）
+  # adaptive_icon_background: "#FFFFFF"  # 背景色
+  # adaptive_icon_foreground: "assets/icon/app_icon.png"  # 前景图标

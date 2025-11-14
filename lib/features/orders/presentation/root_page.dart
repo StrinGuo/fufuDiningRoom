@@ -32,10 +32,12 @@ class _RootPageState extends State<RootPage> {
   
   /// 订单刷新触发器，当值改变时会触发订单页面刷新
   final ValueNotifier<int> _orderRefreshTrigger = ValueNotifier<int>(0);
+  final ValueNotifier<int> _globalRefreshTrigger = ValueNotifier<int>(0);
 
   @override
   void dispose() {
     _orderRefreshTrigger.dispose();
+    _globalRefreshTrigger.dispose();
     super.dispose();
   }
 
@@ -45,6 +47,11 @@ class _RootPageState extends State<RootPage> {
   void _onOrderSubmitted() {
     // 触发订单页面刷新（通过改变值来触发）
     _orderRefreshTrigger.value++;
+    _notifyGlobalRefresh();
+  }
+
+  void _notifyGlobalRefresh() {
+    _globalRefreshTrigger.value++;
   }
 
   @override
@@ -52,10 +59,23 @@ class _RootPageState extends State<RootPage> {
     // 定义所有页面组件
     // 使用 IndexedStack 可以保持页面状态，切换时不会重新构建
     final pages = <Widget>[
-      MenuPage(onOrderSubmitted: _onOrderSubmitted), // 点菜页面
-      OrderPage(refreshTrigger: _orderRefreshTrigger), // 订单列表页
-      ServerOrderPage(), // 服务端订单管理页
-      const ReportPage(), // 报告页面
+      MenuPage(
+        onOrderSubmitted: _onOrderSubmitted,
+        globalRefreshTrigger: _globalRefreshTrigger,
+        onRequestGlobalRefresh: _notifyGlobalRefresh,
+      ), // 点菜页面
+      OrderPage(
+        refreshTrigger: _orderRefreshTrigger,
+        globalRefreshTrigger: _globalRefreshTrigger,
+        onRequestGlobalRefresh: _notifyGlobalRefresh,
+      ), // 订单列表页
+      ServerOrderPage(
+        globalRefreshTrigger: _globalRefreshTrigger,
+        onRequestGlobalRefresh: _notifyGlobalRefresh,
+      ), // 服务端订单管理页
+      ReportPage(
+        globalRefreshTrigger: _globalRefreshTrigger,
+      ), // 报告页面
     ];
 
     return Scaffold(
