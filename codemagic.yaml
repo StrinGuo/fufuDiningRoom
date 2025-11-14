@@ -1,0 +1,48 @@
+workflows:
+  ios-workflow:
+    name: iOS Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      groups:
+        # 添加你的 Codemagic API 密钥组（如果需要）
+        # - app_store_credentials
+      vars:
+        XCODE_WORKSPACE: "ios/Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
+        FLUTTER_VERSION: "3.35.7"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter dependencies
+        script: |
+          flutter pub get
+      - name: Generate app icons
+        script: |
+          flutter pub run flutter_launcher_icons
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios && pod install && cd ..
+      - name: Flutter build ipa
+        script: |
+          flutter build ipa --release
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - Stringuo@163.com  # 替换为你的邮箱
+        notify:
+          success: true
+          failure: false
+      app_store_connect:
+        # 如果需要自动上传到 App Store Connect，取消下面的注释并配置
+        # auth: integration
+        # submit_to_testflight: false
+        # beta_groups:
+        #   - group name 1
+        #   - group name 2
+
