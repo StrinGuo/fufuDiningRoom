@@ -1,48 +1,85 @@
+# Codemagic CI/CD 自动化构建配置文件
+# 用于配置自动化构建、测试和发布流程
+
 workflows:
+  # iOS 构建工作流
   ios-workflow:
     name: iOS Workflow
+    # 最大构建时长（分钟）
     max_build_duration: 120
+    # 使用的构建实例类型
     instance_type: mac_mini_m1
+    
+    # 环境配置
     environment:
+      # 环境变量组（如需要 API 密钥等敏感信息）
       groups:
-        # 添加你的 Codemagic API 密钥组（如果需要）
+        # 示例：App Store Connect 凭证组
         # - app_store_credentials
+      
+      # 环境变量
       vars:
+        # Xcode 工作空间路径
         XCODE_WORKSPACE: "ios/Runner.xcworkspace"
+        # Xcode 构建方案名称
         XCODE_SCHEME: "Runner"
+        # Flutter SDK 版本
         FLUTTER_VERSION: "3.35.7"
+      
+      # 工具版本配置
       flutter: stable
       xcode: latest
       cocoapods: default
+    
+    # 构建脚本步骤
     scripts:
+      # 步骤1: 获取 Flutter 依赖包
       - name: Get Flutter dependencies
         script: |
           flutter pub get
+      
+      # 步骤2: 生成应用图标
       - name: Generate app icons
         script: |
           flutter pub run flutter_launcher_icons
+      
+      # 步骤3: 安装 CocoaPods 依赖（iOS 原生依赖管理）
       - name: Install CocoaPods dependencies
         script: |
           cd ios && pod install && cd ..
+      
+      # 步骤4: 构建 iOS IPA 安装包
       - name: Flutter build ipa
         script: |
           flutter build ipa --release
+    
+    # 构建产物（构建完成后保留的文件）
     artifacts:
+      # IPA 安装包
       - build/ios/ipa/*.ipa
+      # Xcode 构建日志
       - /tmp/xcodebuild_logs/*.log
+      # Flutter 驱动测试日志
       - flutter_drive.log
+    
+    # 发布配置
     publishing:
+      # 邮件通知配置
       email:
         recipients:
-          - Stringuo@163.com  # 替换为你的邮箱
+          # 接收通知的邮箱地址
+          - Stringuo@163.com
         notify:
+          # 构建成功时发送邮件
           success: true
+          # 构建失败时不发送邮件
           failure: false
+      
+      # App Store Connect 自动上传配置（当前未启用）
       app_store_connect:
-        # 如果需要自动上传到 App Store Connect，取消下面的注释并配置
+        # 如需自动上传到 App Store Connect，取消以下注释并配置
         # auth: integration
         # submit_to_testflight: false
         # beta_groups:
         #   - group name 1
         #   - group name 2
-
