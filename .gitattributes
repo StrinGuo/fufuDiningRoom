@@ -1,0 +1,50 @@
+# 自动检测文本文件并标准化行尾
+* text=auto
+
+# 明确声明你希望始终标准化并在检出时转换为本地行尾的文件
+*.dart text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.xml text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.kt text eol=lf
+*.java text eol=lf
+*.swift text eol=lf
+*.gradle text eol=lf
+*.kts text eol=lf
+*.plist text eol=lf
+*.conf text eol=lf
+*.sh text eol=lf
+
+# 声明始终具有 CRLF 行尾的文件（Windows 脚本）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 明确声明二进制文件
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.apk binary
+*.ipa binary
+*.jar binary
+*.class binary
+*.so binary
+*.dll binary
+*.exe binary
+*.zip binary
+*.tar.gz binary
+*.rar binary
+*.7z binary
+*.bin binary
+*.dmg binary
+*.pkg binary
+
