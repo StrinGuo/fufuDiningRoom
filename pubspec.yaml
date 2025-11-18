@@ -21,6 +21,8 @@ dependencies:
   supabase_flutter: ^2.1.2
   # 文件选择器插件 - 用于选择文件
   file_picker: ^8.0.3
+  # 路径提供器插件 - file_picker 的依赖，显式添加以确保版本兼容性
+  path_provider: ^2.1.4
   # iOS 风格图标库
   cupertino_icons: ^1.0.8
 
