@@ -43,21 +43,75 @@ workflows:
         script: |
           flutter pub run flutter_launcher_icons
       
-      # 步骤3: 配置 CocoaPods 仓库（解决 CDN 访问问题）
-      - name: Setup CocoaPods repository
+      # 步骤3: 清理和配置 CocoaPods（解决 CDN 和缓存问题）
+      - name: Setup CocoaPods
         script: |
-          # 如果 trunk 仓库不存在或有问题，尝试重新添加
+          # 清理 CocoaPods 缓存
+          pod cache clean --all || true
+          
+          # 清理旧的仓库
           pod repo remove trunk || true
+          
+          # 尝试添加 CDN 仓库
           pod repo add trunk https://cdn.cocoapods.org/ || true
-          # 如果 CDN 仍然有问题，尝试使用 GitHub 镜像
-          # pod repo add trunk https://github.com/CocoaPods/Specs.git || true
+          
+          # 如果 CDN 失败，尝试使用 GitHub 镜像
+          if ! pod repo list | grep -q trunk; then
+            echo "CDN 失败，尝试使用 GitHub 镜像..."
+            pod repo add trunk https://github.com/CocoaPods/Specs.git || true
+          fi
+          
+          # 更新仓库（如果可能）
+          pod repo update trunk || true
       
       # 步骤4: 安装 CocoaPods 依赖（iOS 原生依赖管理）
       - name: Install CocoaPods dependencies
         script: |
           cd ios
-          # 使用 --repo-update 更新仓库，如果失败则尝试不使用 CDN
-          pod install --repo-update || pod install --no-repo-update
+          
+          # 删除旧的 Pods 和锁定文件
+          rm -rf Pods Podfile.lock
+          
+          # 设置环境变量，禁用 CDN（如果 CDN 有问题）
+          export COCOAPODS_DISABLE_STATS=1
+          
+          # 尝试安装，使用多种策略
+          set +e  # 允许错误继续
+          
+          # 策略1: 使用 --repo-update
+          pod install --repo-update
+          POD_INSTALL_STATUS=$?
+          
+          # 策略2: 如果不更新仓库
+          if [ $POD_INSTALL_STATUS -ne 0 ]; then
+            echo "策略1失败，尝试不使用仓库更新..."
+            pod install --no-repo-update
+            POD_INSTALL_STATUS=$?
+          fi
+          
+          # 策略3: 清理缓存后重试
+          if [ $POD_INSTALL_STATUS -ne 0 ]; then
+            echo "策略2失败，清理缓存后重试..."
+            pod cache clean --all || true
+            pod install --no-repo-update
+            POD_INSTALL_STATUS=$?
+          fi
+          
+          # 策略4: 最后尝试普通安装
+          if [ $POD_INSTALL_STATUS -ne 0 ]; then
+            echo "策略3失败，尝试普通安装..."
+            pod install
+            POD_INSTALL_STATUS=$?
+          fi
+          
+          set -e  # 恢复错误检查
+          
+          # 如果所有策略都失败，退出
+          if [ $POD_INSTALL_STATUS -ne 0 ]; then
+            echo "所有 CocoaPods 安装策略都失败了"
+            exit 1
+          fi
+          
           cd ..
       
       # 步骤5: 构建 iOS IPA 安装包
