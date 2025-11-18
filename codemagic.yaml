@@ -43,12 +43,24 @@ workflows:
         script: |
           flutter pub run flutter_launcher_icons
       
-      # 步骤3: 安装 CocoaPods 依赖（iOS 原生依赖管理）
+      # 步骤3: 配置 CocoaPods 仓库（解决 CDN 访问问题）
+      - name: Setup CocoaPods repository
+        script: |
+          # 如果 trunk 仓库不存在或有问题，尝试重新添加
+          pod repo remove trunk || true
+          pod repo add trunk https://cdn.cocoapods.org/ || true
+          # 如果 CDN 仍然有问题，尝试使用 GitHub 镜像
+          # pod repo add trunk https://github.com/CocoaPods/Specs.git || true
+      
+      # 步骤4: 安装 CocoaPods 依赖（iOS 原生依赖管理）
       - name: Install CocoaPods dependencies
         script: |
-          cd ios && pod install && cd ..
+          cd ios
+          # 使用 --repo-update 更新仓库，如果失败则尝试不使用 CDN
+          pod install --repo-update || pod install --no-repo-update
+          cd ..
       
-      # 步骤4: 构建 iOS IPA 安装包
+      # 步骤5: 构建 iOS IPA 安装包
       - name: Flutter build ipa
         script: |
           flutter build ipa --release
