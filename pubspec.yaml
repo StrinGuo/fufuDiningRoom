@@ -20,9 +20,9 @@ dependencies:
   # Supabase Flutter SDK - 后端服务集成
   supabase_flutter: ^2.1.2
   # 文件选择器插件 - 用于选择文件
-  file_picker: ^8.3.7
+  file_picker: ^10.3.6
   # 路径提供器插件 - file_picker 的依赖，显式添加以确保版本兼容性
-  path_provider: ^2.1.4
+  path_provider: ^2.1.5
   # iOS 风格图标库
   cupertino_icons: ^1.0.8
 
@@ -32,9 +32,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   # Flutter 代码规范检查工具
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   # 应用图标生成工具
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
 
 # Flutter 特定配置
 flutter:
