@@ -46,11 +46,16 @@ workflows:
       # 步骤3: 清理和配置 CocoaPods（解决 CDN 和缓存问题）
       - name: Setup CocoaPods
         script: |
+          # 设置环境变量，禁用 CDN
+          export COCOAPODS_CDN_TRUNK_URL=""
+          export COCOAPODS_DISABLE_STATS=1
+          
           # 清理 CocoaPods 缓存
           pod cache clean --all || true
           
-          # 清理旧的仓库
+          # 清理旧的仓库（包括可能存在的 CDN 仓库）
           pod repo remove trunk || true
+          pod repo remove master || true
           
           # 直接使用 GitHub 镜像（CDN 持续失败）
           echo "使用 GitHub 镜像作为 CocoaPods 仓库..."
@@ -59,14 +64,15 @@ workflows:
           # 验证仓库已添加
           if pod repo list | grep -q trunk; then
             echo "✅ CocoaPods 仓库添加成功"
+            pod repo list
           else
             echo "❌ CocoaPods 仓库添加失败"
             exit 1
           fi
           
-          # 更新仓库（使用 GitHub 镜像）
-          echo "更新 CocoaPods 仓库..."
-          pod repo update trunk || echo "仓库更新失败，但继续..."
+          # 更新仓库（使用 GitHub 镜像）- 这可能需要一些时间
+          echo "更新 CocoaPods 仓库（这可能需要几分钟）..."
+          timeout 300 pod repo update trunk || echo "仓库更新超时或失败，但继续..."
       
       # 步骤4: 安装 CocoaPods 依赖（iOS 原生依赖管理）
       - name: Install CocoaPods dependencies
@@ -76,24 +82,34 @@ workflows:
           # 删除旧的 Pods 和锁定文件
           rm -rf Pods Podfile.lock
           
-          # 设置环境变量
+          # 设置环境变量，禁用 CDN
           export COCOAPODS_DISABLE_STATS=1
+          export COCOAPODS_CDN_TRUNK_URL=""
           
-          # 确保使用 GitHub 镜像（不使用 CDN）
-          # 通过设置源来强制使用 GitHub
-          export COCOAPODS_REPO_TRUNK_URL="https://github.com/CocoaPods/Specs.git"
+          # 确保 trunk 仓库存在且指向 GitHub
+          echo "检查 CocoaPods 仓库状态..."
+          if ! pod repo list | grep -q "trunk.*github.com"; then
+            echo "仓库不存在或指向错误，重新添加..."
+            pod repo remove trunk || true
+            pod repo add trunk https://github.com/CocoaPods/Specs.git
+          fi
           
-          # 尝试安装，优先使用 --no-repo-update（因为仓库已在步骤3中更新）
-          echo "开始安装 CocoaPods 依赖..."
-          if ! pod install --no-repo-update; then
-            echo "使用 --no-repo-update 失败，尝试普通安装..."
+          # 验证仓库
+          echo "当前仓库列表："
+          pod repo list
+          
+          # 使用 --no-repo-update 安装（避免尝试访问 CDN）
+          echo "开始安装 CocoaPods 依赖（使用 --no-repo-update）..."
+          pod install --no-repo-update || {
+            echo "安装失败，检查错误..."
+            echo "仓库状态："
+            pod repo list
+            echo "尝试使用普通安装..."
             pod install || {
-              echo "CocoaPods 安装失败"
-              echo "检查仓库状态..."
-              pod repo list
+              echo "❌ CocoaPods 安装失败"
               exit 1
             }
-          fi
+          }
           
           echo "✅ CocoaPods 依赖安装成功"
           cd ..

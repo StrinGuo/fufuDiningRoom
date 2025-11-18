@@ -4,7 +4,10 @@ platform :ios, '13.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-# 使用 GitHub 镜像作为 CocoaPods 源（CDN 可能不稳定）
+# 禁用 CDN，强制使用 GitHub 镜像
+ENV['COCOAPODS_CDN_TRUNK_URL'] = ''
+
+# 使用 GitHub 镜像作为 CocoaPods 源（CDN 持续失败）
 source 'https://github.com/CocoaPods/Specs.git'
 
 project 'Runner', {
@@ -29,6 +32,12 @@ end
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
 flutter_ios_podfile_setup
+
+# 强制禁用 CDN，使用本地仓库
+# 这可以防止 CocoaPods 尝试访问 CDN
+if ENV['COCOAPODS_CDN_TRUNK_URL'].nil? || ENV['COCOAPODS_CDN_TRUNK_URL'].empty?
+  ENV['COCOAPODS_CDN_TRUNK_URL'] = ''
+end
 
 target 'Runner' do
   use_frameworks!
