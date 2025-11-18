@@ -50,5 +50,14 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<!-- 文件选择器插件所需权限 -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>需要访问相册以选择图片</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>需要访问相册以保存图片</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>需要访问文件以选择文档</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>需要访问下载文件夹以选择文件</string>
 </dict>
 </plist>
