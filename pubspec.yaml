@@ -11,7 +11,7 @@ version: 1.0.0+1
 
 # Dart SDK 版本要求
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.10.0
 
 # 生产环境依赖包
 dependencies:
