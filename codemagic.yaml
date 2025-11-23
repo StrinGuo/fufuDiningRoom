@@ -77,15 +77,30 @@ workflows:
           echo "✅ CocoaPods 依赖安装成功"
           cd ..
       
-      # 步骤5: 构建 iOS IPA 安装包
-      - name: Flutter build ipa
+      # 步骤5: 构建 iOS
+      # 方案1: 不使用代码签名（当前使用，适用于通过爱思助手签名安装）
+      - name: Flutter build ios (no codesign)
         script: |
-          flutter build ipa --release
+          # 构建 iOS 应用，但不进行代码签名
+          # 适用于通过爱思助手等第三方工具签名安装的场景
+          flutter build ios --release --no-codesign
+          
+          echo "✅ iOS 构建完成（未签名）"
+          echo "📦 构建产物位置: build/ios/iphoneos/Runner.app"
+          echo "💡 提示: 可以通过爱思助手对 .app 文件进行签名安装"
+          
+      # 方案2: 使用 Codemagic 自动代码签名（如果有 Apple Developer 账号）
+      # 如需使用自动签名，请：
+      # 1. 在 Codemagic UI 中配置 Apple Developer 账号
+      # 2. 取消下面注释，并注释掉上面的方案1
+      # - name: Flutter build ipa (with codesign)
+      #   script: |
+      #     flutter build ipa --release
     
     # 构建产物（构建完成后保留的文件）
     artifacts:
-      # IPA 安装包
-      - build/ios/ipa/*.ipa
+      # iOS 应用包（使用 --no-codesign 构建）
+      - build/ios/iphoneos/Runner.app
       # Xcode 构建日志
       - /tmp/xcodebuild_logs/*.log
       # Flutter 驱动测试日志
