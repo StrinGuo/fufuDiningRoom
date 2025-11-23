@@ -48,26 +48,9 @@ workflows:
           # 清理 CocoaPods 缓存
           pod cache clean --all || true
           
-          # 清理旧的仓库（包括可能存在的 CDN 仓库）
-          pod repo remove trunk || true
-          pod repo remove master || true
-          
-          # 直接使用 GitHub 镜像（CDN 持续失败）
-          echo "使用 GitHub 镜像作为 CocoaPods 仓库..."
-          pod repo add trunk https://github.com/CocoaPods/Specs.git
-          
-          # 验证仓库已添加
-          if pod repo list | grep -q trunk; then
-            echo "✅ CocoaPods 仓库添加成功"
-            pod repo list
-          else
-            echo "❌ CocoaPods 仓库添加失败"
-            exit 1
-          fi
-          
-          # 更新仓库（使用 GitHub 镜像）- 这可能需要一些时间
-          echo "更新 CocoaPods 仓库（这可能需要几分钟）..."
-          timeout 300 pod repo update trunk || echo "仓库更新超时或失败，但继续..."
+          # Podfile 中已配置使用 GitHub 镜像源，无需手动管理仓库
+          # CocoaPods 会自动使用 Podfile 中指定的 source
+          echo "✅ CocoaPods 环境配置完成（使用 Podfile 中的 GitHub 镜像源）"
       
       # 步骤4: 安装 CocoaPods 依赖（iOS 原生依赖管理）
       - name: Install CocoaPods dependencies
@@ -81,29 +64,14 @@ workflows:
           export COCOAPODS_DISABLE_STATS=1
           export COCOAPODS_CDN_TRUNK_URL=""
           
-          # 确保 trunk 仓库存在且指向 GitHub
-          echo "检查 CocoaPods 仓库状态..."
-          if ! pod repo list | grep -q "trunk.*github.com"; then
-            echo "仓库不存在或指向错误，重新添加..."
-            pod repo remove trunk || true
-            pod repo add trunk https://github.com/CocoaPods/Specs.git
-          fi
-          
-          # 验证仓库
-          echo "当前仓库列表："
-          pod repo list
-          
-          # 使用 --no-repo-update 安装（避免尝试访问 CDN）
-          echo "开始安装 CocoaPods 依赖（使用 --no-repo-update）..."
-          pod install --no-repo-update || {
-            echo "安装失败，检查错误..."
-            echo "仓库状态："
-            pod repo list
-            echo "尝试使用普通安装..."
-            pod install || {
-              echo "❌ CocoaPods 安装失败"
-              exit 1
-            }
+          # Podfile 中已配置 GitHub 镜像源，直接安装即可
+          # CocoaPods 会自动使用 Podfile 中指定的 source
+          echo "开始安装 CocoaPods 依赖（使用 Podfile 中的 GitHub 镜像源）..."
+          pod install || {
+            echo "❌ CocoaPods 安装失败"
+            echo "检查 Podfile 配置..."
+            cat Podfile | grep -A 2 "source"
+            exit 1
           }
           
           echo "✅ CocoaPods 依赖安装成功"
